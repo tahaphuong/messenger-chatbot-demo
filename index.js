@@ -80,7 +80,7 @@ app.use(bodyParser.urlencoded({
 var server = http.createServer(app);
 app.listen(process.env.PORT || 1337);
 app.get('/', (req, res) => {
-  res.send("Server chạy ngon lành.");
+  res.send("Ok it runs.");
 });
 app.get('/webhook', function(req, res) {
   if (req.query['hub.verify_token'] === 'aaathp') {
@@ -88,7 +88,7 @@ app.get('/webhook', function(req, res) {
   }
   res.send('Error, wrong validation token');
 });
-// Đoạn code xử lý khi có người nhắn tin cho bot
+// execute when somebody send a message to bot
 app.post('/webhook', function(req, res) {
   var entries = req.body.entry;
   for (var entry of entries) {
@@ -96,21 +96,26 @@ app.post('/webhook', function(req, res) {
     for (var message of messaging) {
       var senderId = message.sender.id;
       if (message.message) {
-        // Nếu người dùng gửi tin nhắn đến
+        // if user send message
         if (message.message.text) {
           var text = message.message.text;
-          if(text == 'hi' || text == "hello")
+          if(text == "start")
           {
-            sendMessage(senderId, "Trung Quân's Bot: " + 'Xin Chào');
+            sendMessage(senderId, "Do you feel good today (answer yes or 'no')");
+              if (text == "yes") {
+                sendMessage(senderId, "Oh that's cool. Bye.");
+              } else {
+                sendMessage(senderId, "I will consider this message as a no. Thank you and good bye.");
+              }
           }
-          else{sendMessage(senderId, "Trung Quân's Bot: " + "Xin lỗi, câu hỏi của bạn chưa có trong hệ thống, chúng tôi sẽ cập nhật sớm nhất.");}
+          else{sendMessage(senderId, "" + "(no reply)");}
         }
       }
     }
   }
   res.status(200).send("OK");
 });
-// Gửi thông tin tới REST API để Bot tự trả lời
+// Send info to REST API => Bot respond automatically
 function sendMessage(senderId, message) {
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
