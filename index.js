@@ -102,10 +102,13 @@ app.post('/webhook', function(req, res) {
           if(text == "start")
           {
             sendMessage(senderId, "Do you feel good today (answer yes or 'no')");
-              if (text == "yes") {
-                sendMessage(senderId, "Oh that's cool. Bye.");
-              } else {
-                sendMessage(senderId, "I will consider this message as a no. Thank you and good bye.");
+              if (message.message.text) {
+                var t = message.message.text
+                if (t == "yes") {
+                  sendMessage(senderId, "Oh that's cool. Bye.");
+                } else {
+                  sendMessage(senderId, "I will consider this message as a no. Thank you and good bye.");
+                }
               }
           }
           else{sendMessage(senderId, "" + "(no reply)");}
