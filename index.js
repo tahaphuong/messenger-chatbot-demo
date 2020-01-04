@@ -89,22 +89,23 @@ app.get('/webhook', function(req, res) {
   res.send('Error, wrong valid token');
 });
 
-var senders = new Map() 
-
 // execute when somebody send a message to bot
-app.post('/webhook', function(req, res) {
+
+let senders = new Map()
+app.post('/webhook', function(req, res) { 
   var entries = req.body.entry;
   for (var entry of entries) {
     var webhook_event = entry.messaging[0];
 
     // for (var webhook_event of messages) 
     var senderId = webhook_event.sender.id;
+    
     if (webhook_event.message) {
       // if user send message
       if (!senders.has(senderId)) {
-        senders.set(senderId, 0) 
+        senders.set(senderId, 0)
       }
-      handleMessage(senderId, webhook_event.message, senders.get(senderId));        
+      handleMessage(senderId, webhook_event.message);        
     } else if (webhook_event.postback) {
       handlePostback(senderId, webhook_event.postback);
     } 
@@ -112,29 +113,29 @@ app.post('/webhook', function(req, res) {
   res.status(200).send("OK");
 });
 
-function handleMessage (senderId, user_message, stage) {
+function handleMessage (senderId, user_message) {
   let response;
 
   // Check if the message contains text
   let message = user_message.text
   if (message) {
-    switch (stage) {
+    if (message=='exit' && senders.get(senderId)>0) {
+      senders.set(senderId, 0)
+      respond(senderId, "Goodbye and have a nice day!")
+      return;
+    }
+    switch (map.get(senderId)) {
       case 0: 
         response = {"text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
         senders.set(senderId, 1)
         break;
       case 1: 
-        if (message == 'exit') {
-          response = {"text": "Okay dude. Goodbye then!"}
-          senders.set(senderId, 0)
-        } else {
-          var greeting = "Hello " + message + ". "
-          senders.set(senderId, 2)
-          readyToStart(senderId, greeting)
-        }
-        break;
-    }
-  } else if (user_message.attachments) {
+        const greeting = "Hello " + message + ". "
+        senders.set(senderId, 2)
+        readyToStart(senderId, greeting)
+    } 
+  }
+  else if (user_message.attachments) {
     // Gets the URL of the message attachment
     let attachment_url = user_message.attachments[0].payload.url;
     response = {
