@@ -64,7 +64,7 @@
 // });
 
 
-
+const PAGE_TOKEN = "EAAIg1tJZAgKQBAHY5EXvzsIm0I89bcaKZCRLxHvTn0qVc3EoBDRiZBRpHbHq4Ce3I0rULc5FxCE5oZCGmWflmrBpijyl779ZCEFZCnW3qvG3q2FhfCgtbGme3fDBAQSxyvbZCdop6IVO7xa6cNYehhBJQxgNloHNs95XEeoqS55gSjdfWQt3iBM"
 var logger = require('morgan');
 var http = require('http');
 var bodyParser = require('body-parser');
@@ -89,7 +89,7 @@ app.get('/webhook', function(req, res) {
   res.send('Error, wrong valid token');
 });
 
-var prev;
+var senders = new Map() 
 
 // execute when somebody send a message to bot
 app.post('/webhook', function(req, res) {
@@ -101,7 +101,10 @@ app.post('/webhook', function(req, res) {
     var senderId = webhook_event.sender.id;
     if (webhook_event.message) {
       // if user send message
-      handleMessage(senderId, webhook_event.message);        
+      if (!senders.has(senderId)) {
+        senders.set(senderId, 0) 
+      }
+      handleMessage(senderId, webhook_event.message, senders.get(senderId));        
     } else if (webhook_event.postback) {
       handlePostback(senderId, webhook_event.postback);
     } 
@@ -109,17 +112,29 @@ app.post('/webhook', function(req, res) {
   res.status(200).send("OK");
 });
 
-
-function handleMessage (senderId, user_message) {
+function handleMessage (senderId, user_message, stage) {
   let response;
 
   // Check if the message contains text
-  if (user_message.text) {    
-
-    // Create the payload for a basic text message
-    response = { "text": `cc ${user_message.text}`  }
+  let message = user_message.text
+  if (message) {
+    switch (stage) {
+      case 0: 
+        response = {"text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
+        senders.set(senderId, 1)
+        break;
+      case 1: 
+        if (message == 'exit') {
+          response = {"text": "Okay dude. Goodbye then!"}
+          senders.set(senderId, 0)
+        } else {
+          var greeting = "Hello " + message + ". "
+          senders.set(senderId, 2)
+          readyToStart(senderId, greeting)
+        }
+        break;
+    }
   } else if (user_message.attachments) {
-  
     // Gets the URL of the message attachment
     let attachment_url = user_message.attachments[0].payload.url;
     response = {
@@ -135,12 +150,12 @@ function handleMessage (senderId, user_message) {
               {
                 "type": "postback",
                 "title": "Yes!",
-                "payload": "yes",
+                "payload": "yes_photo",
               },
               {
                 "type": "postback",
                 "title": "No!",
-                "payload": "no",
+                "payload": "no_photo",
               }
             ],
           }]
@@ -161,22 +176,50 @@ function handlePostback(senderId, user_postback) {
   let payload = user_postback.payload;
 
   // Set the response based on the postback payload
-  if (payload === 'yes') {
-    response = { "text": "Thanks!" }
-  } else if (payload === 'no') {
-    response = { "text": "Oops, try sending another image." }
+  switch (payload) {
+    case 'yes_photo': 
+      response = { "text": "Thanks!" }
+      break;
+    case 'no_photo': 
+      response = { "text": "Oops, try sending another image." }
+      break;
+    case "vi_language": 
+      break;
+    case "en_language":
+      break;
   }
   // Send the message to acknowledge the postback
   respond(senderId, response);
 }
 
+function readyToStart(senderId, greeting) {
+  let response = {"text": greeting + "So now you have to solve some Math questions. Are you ready?"}
+  let response2 = {
+    "text": "I know you are ready. Let's start anyway. Choose your language",
+    "buttons": [
+      {
+        "type": "postback",
+        "title": "tiếng việt nè",
+        "payload": "vi_language",
+      },
+      {
+        "type": "postback",
+        "title": "english",
+        "payload": "en_language",
+      }
+    ],
+  }
+
+  respond(senderId, response)
+  respond(senderId, response2)
+}
 
 // Send info to REST API => Bot respond automatically
 function respond(senderId, response) {
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
     qs: {
-      access_token: "EAAIg1tJZAgKQBAHY5EXvzsIm0I89bcaKZCRLxHvTn0qVc3EoBDRiZBRpHbHq4Ce3I0rULc5FxCE5oZCGmWflmrBpijyl779ZCEFZCnW3qvG3q2FhfCgtbGme3fDBAQSxyvbZCdop6IVO7xa6cNYehhBJQxgNloHNs95XEeoqS55gSjdfWQt3iBM",
+      access_token: PAGE_TOKEN,
     },
     method: "POST",
 
@@ -184,6 +227,7 @@ function respond(senderId, response) {
       recipient: { id: senderId },
       message: response
     }
+
   }, function(error, response, body) {
     if (error) {
       console.log("sending error")
