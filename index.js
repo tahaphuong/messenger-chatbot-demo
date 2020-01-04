@@ -117,9 +117,7 @@ function handleMessage (senderId, user_message) {
   if (user_message.text) {    
 
     // Create the payload for a basic text message
-    response = {
-      "text": `What's uppp?`
-    }
+    response = "What's up?"
   } else if (user_message.attachments) {
   
     // Gets the URL of the message attachment
