@@ -118,20 +118,19 @@ function handleMessage (senderId, user_message, stage) {
   // Check if the message contains text
   let message = user_message.text
   if (message) {
+    if (message == 'exit') {
+      response = {"text": "Okay dude. Goodbye then!"}
+      senders.set(senderId, 0)
+    }
     switch (stage) {
       case 0: 
-        response = {"text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
+        response = {"text": "Enter your name to continue. You can send 'exit' at anytime you want to stop. "}
         senders.set(senderId, 1)
         break;
       case 1: 
-        if (message == 'exit') {
-          response = {"text": "Okay dude. Goodbye then!"}
-          senders.set(senderId, 0)
-        } else {
-          var greeting = "Hello " + message + ". "
-          senders.set(senderId, 2)
-          readyToStart(senderId, greeting)
-        }
+        var greeting = "Hello " + message + ". "
+        senders.set(senderId, 2)
+        readyToStart(senderId, greeting)
         break;
     }
   } else if (user_message.attachments) {
@@ -193,9 +192,8 @@ function handlePostback(senderId, user_postback) {
 }
 
 function readyToStart(senderId, greeting) {
-  let response = {"text": greeting + "So now you have to solve some Math questions. Are you ready?"}
-  let response2 = {
-    "text": "I know you are ready. Let's start anyway. Choose your language",
+  let response = {
+    "text": greeting + "I know you are ready. Let's start anyway. Choose your language",
     "buttons": [
       {
         "type": "postback",
@@ -211,7 +209,6 @@ function readyToStart(senderId, greeting) {
   }
 
   respond(senderId, response)
-  respond(senderId, response2)
 }
 
 // Send info to REST API => Bot respond automatically
