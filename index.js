@@ -102,10 +102,10 @@ app.post('/webhook', function(req, res) {
     
     if (webhook_event.message) {
       // if user send message
-      if (!senders.has(senderId)) {
-        senders.set(senderId, 0)
-      }
-      handleMessage(senderId, webhook_event.message);        
+      if (!senders.has(senderId)) { senders.set(senderId, 0)}
+      if (webhook_event.message.quick_reply) {handlePostback(senderId, webhook_event.message.quick_reply);} 
+      else { handleMessage(senderId, webhook_event.message);}
+       
     } else if (webhook_event.postback) {
       handlePostback(senderId, webhook_event.postback);
     } 
@@ -118,23 +118,74 @@ function handleMessage (senderId, user_message) {
 
   // Check if the message contains text
   if (user_message.text) {
-    let message = user_message.text
+    let message = user_message.text.trim()
 
-    if (message=='exit' && senders.get(senderId)>0) {
+    if (message=='exit' && senders.get(senderId)!=0) {
       senders.set(senderId, 0)
       respond(senderId, { "text": "Goodbye and have a nice day!" })
       return;
-    }
+    } 
 
     switch (senders.get(senderId)) {
       case 0: 
-        response = { "text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
+        response = { "text": "Enter your name to continue. You can enter 'exit' to exit at anytime. "}
         senders.set(senderId, 1)
         respond(senderId, response);
-        break;       
+        break;   
+
       case 1: 
         let greeting = "Hello " + message + ". "
         senders.set(senderId, 2)
+        readyToStart(senderId, greeting)
+        break;
+
+      case "vi1": 
+        response = {"text": "Hãy tính tổng của 11 và 11?"}
+        senders.set(senderId, "vi1r")
+        respond(senderId, response);
+        break;
+
+      case "en1":
+        response = {"text": "Calculate the sum of 11 and 11?"}
+        senders.set(senderId, "en1r")
+        respond(senderId, response);
+        break;
+
+      case "vi1r": 
+        if (message == "22") {
+          response = {"text": "Đúng rồi! Cảm ơn và tạm biệt!"}
+          senders.set(senderId, 0)
+        } else {
+          response = {"text": "Sai rồi! Hãy thử lại. Nếu khó quá bạn có thể gửi 'exit' để thoát. Hoặc bạn có thể gửi 'answer' để xem đáp án"}
+          senders.set(senderId, "ans")
+        }
+        respond(senderId, response);
+        break;
+
+      case "en1r": 
+        if (message == "22") {
+          response = {"text": "Correct! Goodbye and see you again!"}
+          senders.set(senderId, 0)
+        } else {
+          response = {"text": "It's wrong. Try again. You can send 'exit' to exit. Or youu can send 'answer' to check the answer"}
+          senders.set(senderId, "ans")
+        }
+        respond(senderId, response);
+        break;
+
+      case "ans": 
+        if (message == "answer") {
+          response = { "text": "The answer is 22. Kết quả là 22. Bạn hơi ngu chút. Nhưng bạn vẫn đáng yêu ye. Goodbye and see you later."}
+          senders.set(senderId, 0)
+        } else {
+          response = { "text": "The syntax is not correct. Cú pháp chưa đúng."}
+        }
+        respond(senderId, response);
+        break;
+        
+      default: 
+        response = {"text": "If you want to exit, send 'exit'. If you want to change your name and start again, Please enter your name again. "}
+        senders.set(senderId, 1)
         readyToStart(senderId, greeting)
         break;
     } 
@@ -189,10 +240,12 @@ function handlePostback(senderId, user_postback) {
       response = { "text": "Oops, try sending another image." }
       break;
     case 'vi_language': 
-      response = { "text": "Bắt đầu nào!" }
+      response = { "text": "Bắt đầu nào! Nhắn một tin bất kì để tiếp tục." }
+      senders.set(senderId, "vi1")
       break;
     case 'en_language': 
-      response = { "text": "Let's start" }
+      response = { "text": "Let's start! Send a random text to continue" }
+      senders.set(senderId, "en1")
       break;
   }
   // Send the message to acknowledge the postback
@@ -206,12 +259,12 @@ function readyToStart(senderId, greeting) {
       {
         "content_type": "text",
         "title": "tiếng việt nè",
-        "payload": "vi_language"
+        "payload": "vi_language",
       },
       {
         "content_type": "text",
         "title": "english",
-        "payload": "en_language"
+        "payload": "en_language",
       }
     ]
   };
