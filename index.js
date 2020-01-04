@@ -124,11 +124,6 @@ function handleMessage (senderId, user_message) {
       senders.set(senderId, 0)
       respond(senderId, { "text": "Goodbye and have a nice day!" })
       return;
-    } else if (!message=='exit' && senders.get(senderId)>0) {
-      let greeting = "Hello " + message + ". "
-      senders.set(senderId, 2)
-      readyToStart(senderId, greeting)
-      return;
     }
 
     switch (senders.get(senderId)) {
@@ -136,7 +131,12 @@ function handleMessage (senderId, user_message) {
         response = { "text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
         senders.set(senderId, 1)
         respond(senderId, response);
-        break;        
+        break;       
+      case 1: 
+        let greeting = "Hello " + message + ". "
+        senders.set(senderId, 2)
+        readyToStart(senderId, greeting)
+        break;
     } 
   }
   else if (user_message.attachments) {
@@ -202,19 +202,19 @@ function handlePostback(senderId, user_postback) {
 function readyToStart(senderId, greeting) {
   let response = {
     "text": greeting + "I know you are ready. Let's start anyway. Choose your language",
-    "buttons": [
+    "quick_replies": [
       {
-        "type": "postback",
+        "content_type": "text",
         "title": "tiếng việt nè",
-        "payload": "vi_language",
+        "payload": "vi_language"
       },
       {
-        "type": "postback",
+        "content_type": "text",
         "title": "english",
-        "payload": "en_language",
+        "payload": "en_language"
       }
-    ],
-  }
+    ]
+  };
   respond(senderId, response)
 }
 
