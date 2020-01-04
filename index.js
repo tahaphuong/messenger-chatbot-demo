@@ -117,11 +117,7 @@ function handleMessage (senderId, user_message, stage) {
 
   // Check if the message contains text
   let message = user_message.text
-  if (message) {
-    if (message == 'exit') {
-      response = {"text": "Okay dude. Goodbye then!"}
-      senders.set(senderId, 0)
-    }
+  if (message) { 
     switch (stage) {
       case 0: 
         response = {"text": "Enter your name to continue. You can send 'exit' at anytime you want to stop. "}
@@ -132,6 +128,10 @@ function handleMessage (senderId, user_message, stage) {
         senders.set(senderId, 2)
         readyToStart(senderId, greeting)
         break;
+    }
+    if (message == 'exit') {
+      response = {"text": "Okay dude. Goodbye then!"}
+      senders.set(senderId, 0)
     }
   } else if (user_message.attachments) {
     // Gets the URL of the message attachment
