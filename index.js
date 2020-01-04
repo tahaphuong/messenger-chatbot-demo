@@ -86,7 +86,7 @@ app.get('/webhook', function(req, res) {
   if (req.query['hub.verify_token'] === 'aaathp') {
     res.send(req.query['hub.challenge']);
   }
-  res.send('Error, wrong validation token');
+  res.send('Error, wrong valid token');
 });
 
 var prev;
@@ -117,7 +117,7 @@ function handleMessage (senderId, user_message) {
   if (user_message.text) {    
 
     // Create the payload for a basic text message
-    response = { "text": `cc + ${user_message}`  }
+    response = { "text": `cc ${user_message.text}`  }
   } else if (user_message.attachments) {
   
     // Gets the URL of the message attachment
@@ -153,6 +153,7 @@ function handleMessage (senderId, user_message) {
   respond(senderId, response);
 }
 
+
 function handlePostback(senderId, user_postback) {
   let response;
   
@@ -169,6 +170,7 @@ function handlePostback(senderId, user_postback) {
   respond(senderId, response);
 }
 
+
 // Send info to REST API => Bot respond automatically
 function respond(senderId, response) {
   request({
@@ -179,10 +181,14 @@ function respond(senderId, response) {
     method: "POST",
 
     json: {
-      recipient: {
-        id: senderId
-      },
+      recipient: { id: senderId },
       message: response
+    }
+  }, function(error, response, body) {
+    if (error) {
+      console.log("sending error")
+    } else if (response.body.error) {
+      console.log("response body error")
     }
   });
 }
