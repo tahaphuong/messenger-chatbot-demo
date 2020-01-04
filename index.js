@@ -125,14 +125,14 @@ function handleMessage (senderId, user_message) {
       respond(senderId, { "text": "Goodbye and have a nice day!" })
       return;
     }
-    
+
     switch (senders.get(senderId)) {
       case 0: 
         response = { "text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
         senders.set(senderId, 1)
         respond(senderId, response);
         break;
-      case 1: 
+      default: 
         let greeting = "Hello " + message + ". "
         senders.set(senderId, 2)
         readyToStart(senderId, greeting)
