@@ -124,7 +124,7 @@ function handleMessage (senderId, user_message) {
       respond(senderId, "Goodbye and have a nice day!")
       return;
     }
-    switch (map.get(senderId)) {
+    switch (senders.get(senderId)) {
       case 0: 
         response = {"text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
         senders.set(senderId, 1)
