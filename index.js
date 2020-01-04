@@ -104,7 +104,7 @@ app.post('/webhook', function(req, res) {
       if (!senders.has(senderId)) {
         senders.set(senderId, 0) 
       }
-      handleMessage(senderId, webhook_event.message, senders.get(senderId), senders);        
+      handleMessage(senderId, webhook_event.message, senders.get(senderId));        
     } else if (webhook_event.postback) {
       handlePostback(senderId, webhook_event.postback);
     } 
@@ -112,7 +112,7 @@ app.post('/webhook', function(req, res) {
   res.status(200).send("OK");
 });
 
-function handleMessage (senderId, user_message, stage, senders) {
+function handleMessage (senderId, user_message, stage) {
   let response;
 
   // Check if the message contains text
@@ -183,17 +183,13 @@ function handlePostback(senderId, user_postback) {
     case 'no_photo': 
       response = { "text": "Oops, try sending another image." }
       break;
-    case "vi_language": 
-      break;
-    case "en_language":
-      break;
   }
   // Send the message to acknowledge the postback
   respond(senderId, response);
 }
 
 function readyToStart(senderId, greeting) {
-  let response = {
+  const response = {
     "text": greeting + "I know you are ready. Let's start anyway. Choose your language",
     "buttons": [
       {
@@ -208,7 +204,6 @@ function readyToStart(senderId, greeting) {
       }
     ],
   }
-
   respond(senderId, response)
 }
 
