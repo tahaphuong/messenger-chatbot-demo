@@ -155,9 +155,11 @@ function handleMessage (senderId, user_message) {
         if (message == "22") {
           response = {"text": "Đúng rồi! Cảm ơn và tạm biệt!"}
           senders.set(senderId, 0)
+        } else if (message == "đáp án") {
+          response = { "text": "Kết quả là 22. Bạn hơi ngu chút. Nhưng bạn vẫn đáng yêu ye. Tạm biệt và hẹn gặp lại!"}
+          senders.set(senderId, 0)
         } else {
-          response = {"text": "Sai rồi! Hãy thử lại. Nếu khó quá bạn có thể gửi 'exit' để thoát. Hoặc bạn có thể gửi 'answer' để xem đáp án"}
-          senders.set(senderId, "ans")
+          response = {"text": "Sai rồi! Hãy thử lại. Nếu khó quá bạn có thể gửi 'exit' để thoát. Hoặc bạn có thể gửi 'đáp án' để xem đáp án"}
         }
         respond(senderId, response);
         break;
@@ -166,19 +168,11 @@ function handleMessage (senderId, user_message) {
         if (message == "22") {
           response = {"text": "Correct! Goodbye and see you again!"}
           senders.set(senderId, 0)
-        } else {
-          response = {"text": "It's wrong. Try again. You can send 'exit' to exit. Or youu can send 'answer' to check the answer"}
-          senders.set(senderId, "ans")
-        }
-        respond(senderId, response);
-        break;
-
-      case "ans": 
-        if (message == "answer") {
-          response = { "text": "The answer is 22. Kết quả là 22. Bạn hơi ngu chút. Nhưng bạn vẫn đáng yêu ye. Goodbye and see you later."}
+        } else if (message == "answer") {
+          response = { "text": "The answer is 22. You are a little dumb. But you're still cute anyway. Goodbye and see you later!"}
           senders.set(senderId, 0)
         } else {
-          response = { "text": "The syntax is not correct. Cú pháp chưa đúng."}
+          response = {"text": "It's wrong. Let's try again. You can send 'exit' to exit. Or you can send 'answer' to check the answer"}
         }
         respond(senderId, response);
         break;
