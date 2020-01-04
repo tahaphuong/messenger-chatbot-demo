@@ -104,7 +104,7 @@ app.post('/webhook', function(req, res) {
       if (!senders.has(senderId)) {
         senders.set(senderId, 0) 
       }
-      handleMessage(senderId, webhook_event.message, senders.get(senderId));        
+      handleMessage(senderId, webhook_event.message, senders.get(senderId), senders);        
     } else if (webhook_event.postback) {
       handlePostback(senderId, webhook_event.postback);
     } 
@@ -112,7 +112,7 @@ app.post('/webhook', function(req, res) {
   res.status(200).send("OK");
 });
 
-function handleMessage (senderId, user_message, stage) {
+function handleMessage (senderId, user_message, stage, senders) {
   let response;
 
   // Check if the message contains text
@@ -193,7 +193,6 @@ function handlePostback(senderId, user_postback) {
 }
 
 function readyToStart(senderId, greeting) {
-
   let response = {
     "text": greeting + "I know you are ready. Let's start anyway. Choose your language",
     "buttons": [
