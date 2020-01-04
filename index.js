@@ -90,7 +90,7 @@ app.get('/webhook', function(req, res) {
 });
 
 var senders = new Map() 
-
+console.log(senders)
 // execute when somebody send a message to bot
 app.post('/webhook', function(req, res) {
   var entries = req.body.entry;
@@ -104,6 +104,7 @@ app.post('/webhook', function(req, res) {
       if (!senders.has(senderId)) {
         senders.set(senderId, 0) 
       }
+      console.log(senders)
       handleMessage(senderId, webhook_event.message, senders.get(senderId));        
     } else if (webhook_event.postback) {
       handlePostback(senderId, webhook_event.postback);
@@ -128,10 +129,6 @@ function handleMessage (senderId, user_message, stage) {
         senders.set(senderId, 2)
         readyToStart(senderId, greeting)
         break;
-    }
-    if (message == 'exit') {
-      response = {"text": "Okay dude. Goodbye then!"}
-      senders.set(senderId, 0)
     }
   } else if (user_message.attachments) {
     // Gets the URL of the message attachment
