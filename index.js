@@ -88,50 +88,103 @@ app.get('/webhook', function(req, res) {
   }
   res.send('Error, wrong validation token');
 });
+
+var prev;
+
 // execute when somebody send a message to bot
 app.post('/webhook', function(req, res) {
   var entries = req.body.entry;
   for (var entry of entries) {
-    var messaging = entry.messaging;
-    for (var message of messaging) {
-      var senderId = message.sender.id;
-      if (message.message) {
-        // if user send message
-        if (message.message.text) {
-          var text = message.message.text;
-          if(text == "start")
-          {
-            sendMessage(senderId, "Do you feel good today (answer yes or 'no')");
-              if (message.message.text) {
-                var t = message.message.text
-                if (t == "yes") {
-                  sendMessage(senderId, "Oh that's cool. Bye.");
-                } else {
-                  sendMessage(senderId, "I will consider this message as a no. Thank you and good bye.");
-                }
+    var webhook_event = entry.messaging[0];
+
+    // for (var webhook_event of messages) 
+    var senderId = webhook_event.sender.id;
+    if (webhook_event.message) {
+      // if user send message
+      handleMessage(senderId, webhook_event.message);        
+    } else if (webhook_event.postback) {
+      handlePostback(senderId, webhook_event.postback);
+    } 
+  }
+  res.status(200).send("OK");
+});
+
+
+function handleMessage (senderId, user_message) {
+  let response;
+
+  // Check if the message contains text
+  if (user_message.text) {    
+
+    // Create the payload for a basic text message
+    response = {
+      "text": `What's uppp?`
+    }
+  } else if (user_message.attachments) {
+  
+    // Gets the URL of the message attachment
+    let attachment_url = user_message.attachments[0].payload.url;
+    response = {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Is this the right picture?",
+            "subtitle": "Tap a button to answer.",
+            "image_url": attachment_url,
+            "buttons": [
+              {
+                "type": "postback",
+                "title": "Yes!",
+                "payload": "yes",
+              },
+              {
+                "type": "postback",
+                "title": "No!",
+                "payload": "no",
               }
-          }
-          else{sendMessage(senderId, "" + "(no reply)");}
+            ],
+          }]
         }
       }
     }
   }
-  res.status(200).send("OK");
-});
+  
+  // Sends the response message
+  respond(senderId, response);
+}
+
+function handlePostback(senderId, user_postback) {
+  let response;
+  
+  // Get the payload for the postback
+  let payload = user_postback.payload;
+
+  // Set the response based on the postback payload
+  if (payload === 'yes') {
+    response = { "text": "Thanks!" }
+  } else if (payload === 'no') {
+    response = { "text": "Oops, try sending another image." }
+  }
+  // Send the message to acknowledge the postback
+  respond(senderId, response);
+}
+
 // Send info to REST API => Bot respond automatically
-function sendMessage(senderId, message) {
+function respond(senderId, response) {
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
     qs: {
       access_token: "EAAIg1tJZAgKQBAHY5EXvzsIm0I89bcaKZCRLxHvTn0qVc3EoBDRiZBRpHbHq4Ce3I0rULc5FxCE5oZCGmWflmrBpijyl779ZCEFZCnW3qvG3q2FhfCgtbGme3fDBAQSxyvbZCdop6IVO7xa6cNYehhBJQxgNloHNs95XEeoqS55gSjdfWQt3iBM",
     },
-    method: 'POST',
+    method: "POST",
     json: {
       recipient: {
         id: senderId
       },
       message: {
-        text: message
+        text: response
       },
     }
   });
