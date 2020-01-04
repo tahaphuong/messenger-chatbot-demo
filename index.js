@@ -136,7 +136,6 @@ function handleMessage (senderId, user_message) {
         let greeting = "Hello " + message + ". "
         senders.set(senderId, 2)
         readyToStart(senderId, greeting)
-        break;
     } 
   }
   else if (user_message.attachments) {
