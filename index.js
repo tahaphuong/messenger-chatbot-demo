@@ -90,7 +90,7 @@ app.get('/webhook', function(req, res) {
 });
 
 var senders = new Map() 
-console.log(senders)
+
 // execute when somebody send a message to bot
 app.post('/webhook', function(req, res) {
   var entries = req.body.entry;
@@ -104,7 +104,6 @@ app.post('/webhook', function(req, res) {
       if (!senders.has(senderId)) {
         senders.set(senderId, 0) 
       }
-      console.log(senders)
       handleMessage(senderId, webhook_event.message, senders.get(senderId));        
     } else if (webhook_event.postback) {
       handlePostback(senderId, webhook_event.postback);
@@ -118,16 +117,21 @@ function handleMessage (senderId, user_message, stage) {
 
   // Check if the message contains text
   let message = user_message.text
-  if (message) { 
+  if (message) {
     switch (stage) {
       case 0: 
-        response = {"text": "Enter your name to continue. You can send 'exit' at anytime you want to stop. "}
+        response = {"text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
         senders.set(senderId, 1)
         break;
       case 1: 
-        var greeting = "Hello " + message + ". "
-        senders.set(senderId, 2)
-        readyToStart(senderId, greeting)
+        if (message == 'exit') {
+          response = {"text": "Okay dude. Goodbye then!"}
+          senders.set(senderId, 0)
+        } else {
+          var greeting = "Hello " + message + ". "
+          senders.set(senderId, 2)
+          readyToStart(senderId, greeting)
+        }
         break;
     }
   } else if (user_message.attachments) {
@@ -189,6 +193,7 @@ function handlePostback(senderId, user_postback) {
 }
 
 function readyToStart(senderId, greeting) {
+
   let response = {
     "text": greeting + "I know you are ready. Let's start anyway. Choose your language",
     "buttons": [
