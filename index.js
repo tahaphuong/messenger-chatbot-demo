@@ -91,7 +91,7 @@ app.get('/webhook', function(req, res) {
 
 // execute when somebody send a message to bot
 
-// let senders = new Map()
+let senders = new Map()
 app.post('/webhook', function(req, res) { 
   var entries = req.body.entry;
   for (var entry of entries) {
