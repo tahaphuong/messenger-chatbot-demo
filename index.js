@@ -117,7 +117,7 @@ function handleMessage (senderId, user_message) {
   if (user_message.text) {    
 
     // Create the payload for a basic text message
-    response = "cc"
+    response = { "text": `cc + ${user_message}`  }
   } else if (user_message.attachments) {
   
     // Gets the URL of the message attachment
@@ -177,13 +177,12 @@ function respond(senderId, response) {
       access_token: "EAAIg1tJZAgKQBAHY5EXvzsIm0I89bcaKZCRLxHvTn0qVc3EoBDRiZBRpHbHq4Ce3I0rULc5FxCE5oZCGmWflmrBpijyl779ZCEFZCnW3qvG3q2FhfCgtbGme3fDBAQSxyvbZCdop6IVO7xa6cNYehhBJQxgNloHNs95XEeoqS55gSjdfWQt3iBM",
     },
     method: "POST",
+
     json: {
       recipient: {
         id: senderId
       },
-      message: {
-        text: response
-      },
+      message: response
     }
   });
 }
