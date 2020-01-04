@@ -117,13 +117,15 @@ function handleMessage (senderId, user_message) {
   let response;
 
   // Check if the message contains text
-  let message = user_message.text
-  if (message) {
+  if (user_message.text) {
+    let message = user_message.text
+
     if (message=='exit' && senders.get(senderId)>0) {
       senders.set(senderId, 0)
       respond(senderId, { "text": "Goodbye and have a nice day!" })
       return;
     }
+    
     switch (senders.get(senderId)) {
       case 0: 
         response = { "text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
@@ -131,7 +133,7 @@ function handleMessage (senderId, user_message) {
         respond(senderId, response);
         break;
       case 1: 
-        const greeting = "Hello " + message + ". "
+        let greeting = "Hello " + message + ". "
         senders.set(senderId, 2)
         readyToStart(senderId, greeting)
         break;
