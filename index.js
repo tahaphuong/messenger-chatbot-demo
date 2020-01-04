@@ -91,7 +91,7 @@ app.get('/webhook', function(req, res) {
 
 // execute when somebody send a message to bot
 
-let senders = new Map()
+// let senders = new Map()
 app.post('/webhook', function(req, res) { 
   var entries = req.body.entry;
   for (var entry of entries) {
@@ -121,18 +121,20 @@ function handleMessage (senderId, user_message) {
   if (message) {
     if (message=='exit' && senders.get(senderId)>0) {
       senders.set(senderId, 0)
-      respond(senderId, "Goodbye and have a nice day!")
+      respond(senderId, { "text": "Goodbye and have a nice day!" })
       return;
     }
     switch (senders.get(senderId)) {
       case 0: 
-        response = {"text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
+        response = { "text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
         senders.set(senderId, 1)
+        respond(senderId, response);
         break;
       case 1: 
         const greeting = "Hello " + message + ". "
         senders.set(senderId, 2)
         readyToStart(senderId, greeting)
+        break;
     } 
   }
   else if (user_message.attachments) {
@@ -163,10 +165,10 @@ function handleMessage (senderId, user_message) {
         }
       }
     }
+    // Sends the response message
+    respond(senderId, response);
   }
   
-  // Sends the response message
-  respond(senderId, response);
 }
 
 
@@ -184,13 +186,19 @@ function handlePostback(senderId, user_postback) {
     case 'no_photo': 
       response = { "text": "Oops, try sending another image." }
       break;
+    case 'vi_language': 
+      response = { "text": "Bắt đầu nào!" }
+      break;
+    case 'en_language': 
+      response = { "text": "Let's start" }
+      break;
   }
   // Send the message to acknowledge the postback
   respond(senderId, response);
 }
 
 function readyToStart(senderId, greeting) {
-  const response = {
+  let response = {
     "text": greeting + "I know you are ready. Let's start anyway. Choose your language",
     "buttons": [
       {
