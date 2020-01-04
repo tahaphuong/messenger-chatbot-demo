@@ -124,6 +124,11 @@ function handleMessage (senderId, user_message) {
       senders.set(senderId, 0)
       respond(senderId, { "text": "Goodbye and have a nice day!" })
       return;
+    } else if (!message=='exit' && senders.get(senderId)>0) {
+      let greeting = "Hello " + message + ". "
+      senders.set(senderId, 2)
+      readyToStart(senderId, greeting)
+      return;
     }
 
     switch (senders.get(senderId)) {
@@ -131,11 +136,7 @@ function handleMessage (senderId, user_message) {
         response = { "text": "Enter your name to continue. If you don't want to, please enter 'exit'. "}
         senders.set(senderId, 1)
         respond(senderId, response);
-        break;
-      default: 
-        let greeting = "Hello " + message + ". "
-        senders.set(senderId, 2)
-        readyToStart(senderId, greeting)
+        break;        
     } 
   }
   else if (user_message.attachments) {
